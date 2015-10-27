@@ -29,6 +29,7 @@ try:
 	select * 
 	from mimiciii.noteevents ne
 	where ne.category = 'Echo'
+	ORDER by subject_id 
 	""")
 except:
     print "I can't SELECT from notesevent"
