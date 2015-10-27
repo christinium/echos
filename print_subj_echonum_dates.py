@@ -1,5 +1,12 @@
 #!/usr/bin/python2.4
+# This prints pulls out echos for the mimic3 database and prints out 5 colums
+# Each column is split by ; and the dates are  year_mo_day and in{} split by commas
 #
+# 1) subject_id
+# 2) number of echos with hospital IDs
+# 3) number of echos without hospital IDs
+# 4) dates of echos with hospital IDs
+# 5) dates of echos without hospital IDs
 #
 
 import psycopg2
@@ -22,7 +29,6 @@ try:
 	select * 
 	from mimiciii.noteevents ne
 	where ne.category = 'Echo'
-	limit 10
 	""")
 except:
     print "I can't SELECT from notesevent"
@@ -37,7 +43,7 @@ sub_hash = {}
 # record_id
 # subject_id
 # hadm_id
-# chart_date
+# chartdate
 # category (Echo)
 # description (Report)
 # cgid
@@ -65,9 +71,8 @@ for row in rows:
 		else:
 			sub_hash[row['subject_id']]['no_dates']=sub_hash[row['subject_id']]['no_dates']+","+row['chartdate'].strftime("%Y_%m_%d") 
 		sub_hash[row['subject_id']]['no_hid'] = sub_hash[row['subject_id']]['no_hid']+1 
-#		id = "no_"+str(sub_hash[row['subject_id']]['no_hid'])
-#		sub_hash[row['subject_id']][id] = row['chartdate']
 	else:
+		# no comma if this is the first date being added
 		if (sub_hash[row['subject_id']]['yes_hid'] == 0):
 			sub_hash[row['subject_id']]['yes_dates']=row['chartdate'].strftime("%Y_%m_%d") 
 		else:
@@ -75,16 +80,12 @@ for row in rows:
 
 		sub_hash[row['subject_id']]['yes_hid'] = sub_hash[row['subject_id']]['yes_hid']+1	
 		
-#		id = "yes_"+str(sub_hash[row['subject_id']]['yes_hid'])
-#		sub_hash[row['subject_id']][id] = row['chartdate']
 	total_echos2 += 1
 
 for keys,values in sub_hash.items():
-#	print"%s: %s" % (keys, values)
+
 	print "%s; %s; %s; {%s}; {%s}" % (keys, sub_hash[keys]['yes_hid'], sub_hash[keys]['no_hid'], sub_hash[keys]['yes_dates'], sub_hash[keys]['no_dates'])
 for x in sub_hash:
-#    for y in sub_hash[x]:
-#		print "%s, %s, %s" % (x,sub_hash[x]['yes_hid'], sub_hash[x]['no_hid'])
 	total_echo_for_person = sub_hash[x]['yes_hid'] + sub_hash[x]['no_hid']
 	total_echos += total_echo_for_person
 	if sub_hash[x]['no_hid'] > 0: 
@@ -95,8 +96,9 @@ for x in sub_hash:
 		total_yes += sub_hash[x]['yes_hid']
 	if total_echo_for_person > 1:
 		more_than_one += 1
-#        print (y,':',sub_hash[x][y])	
 
+
+#This prints out stats, not used in this script
 #print "total echos: %s" % total_echos
 #print "total_echos without Hospital Admin Ids: %s" % total_no
 #print "total people with at least one echo without a hospital Id: %s" % total_people_no
